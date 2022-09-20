@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  labels:
+    app: payment-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+      - name: payment-service
+        image: prabeensoti/payment-service
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 120
+          timeoutSeconds: 10
+          periodSeconds: 3
+          failureThreshold: 2
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 130
+          timeoutSeconds: 2
+          periodSeconds: 8
+          failureThreshold: 1
+        env:
+        - name: APP_PROFILE
+          valueFrom:
+            configMapKeyRef:
+              name: app
+              key: APP_PROFILE
+        - name: MYSQL_DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app
+              key: DATABASE_URL
+        - name: MYSQL_DATABASE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: app
+              key: DATABASE_PORT
+        - name: MYSQL_DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app
+              key: USER_DATABASE_NAME
+        - name: BANK_TRANSACTION_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app
+              key: BANK_TRANSACTION_URL
+        - name: CC_TRANSACTION_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app
+              key: CC_TRANSACTION_URL
+        - name: PAYPAL_TRANSACTION_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app
+              key: PAYPAL_TRANSACTION_URL
+        - name: MYSQL_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mysqldb
+              key: DATABASE_USER
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysqldb
+              key: DATABASE_PASSWORD
+        - name: ORDER_PAYMENT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app
+              key: ORDER_PAYMENT_SECRET_KEY
+        - name: PAYMENT_BANK_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app
+              key: PAYMENT_BANK_SECRET_KEY
+        - name: PAYMENT_CC_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app
+              key: PAYMENT_CC_SECRET_KEY
+        - name: PAYMENT_PAYPAL_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app
+              key: PAYMENT_PAYPAL_SECRET_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  labels:
+    app: payment-service
+    spring-boot: "true"
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: payment-service
+  type: ClusterIP
