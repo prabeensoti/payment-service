@@ -56,7 +56,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: app
-              key: USER_DATABASE_NAME
+              key: PAYMENT_DATABASE_NAME
         - name: BANK_TRANSACTION_URL
           valueFrom:
             configMapKeyRef:

@@ -1,5 +1,5 @@
 FROM openjdk:17-alpine
-ENV APP_FILE order-service.jar
+ENV APP_FILE payment-service.jar
 ENV APP_HOME /usr/apps
 EXPOSE 8080
 COPY target/$APP_FILE $APP_HOME/
